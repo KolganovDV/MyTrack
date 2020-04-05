@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "910756824044",
+    "firebase_url": "https://mygeo-9ed60.firebaseio.com",
+    "project_id": "mygeo-9ed60",
+    "storage_bucket": "mygeo-9ed60.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:910756824044:android:6a45eca01332b12edb76c9",
+        "android_client_info": {
+          "package_name": "com.example.mytrack"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "910756824044-trtahuebhi4ecdngvb8n45p6h4nrefs6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.mygeo",
+            "certificate_hash": "f7f081a33f30ef967fe42260481775d11950f71e"
+          }
+        },
+        {
+          "client_id": "910756824044-omrd74l4a69r0iv2j6auu76hi9f3drsc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA17vflM-raT3xa1bVzY5VP6auZ8DKfrWU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "910756824044-omrd74l4a69r0iv2j6auu76hi9f3drsc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
