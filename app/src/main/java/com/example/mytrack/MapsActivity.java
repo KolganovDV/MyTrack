@@ -2,6 +2,7 @@ package com.example.mytrack;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
@@ -13,14 +14,18 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
 
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -36,6 +41,7 @@ import java.util.Map;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
+    private static final int REQUEST_CODE_PERMISSION_ACCESS_FINE_LOCATION = 1;
     private GoogleMap mMap;
     FirebaseDatabase database = FirebaseDatabase.getInstance();
     DatabaseReference myRef = database.getReference("pos");
@@ -58,15 +64,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        int permissionStatus = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
+        if (permissionStatus != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION},
+                    REQUEST_CODE_PERMISSION_ACCESS_FINE_LOCATION);
+        }
         //ЗАПУСКАЕМ СЛУЖБУ ЖПС
-
         //startService(
         /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(
                     new Intent(MapsActivity.this, MyServiceGPS.class));
         }*/
         if(savedInstanceState != null){
-            //line.addAll((List)savedInstanceState.getParcelableArrayList("key"));
+            line.addAll((List)savedInstanceState.getParcelableArrayList("key"));
         }
         setContentView(R.layout.activity_maps);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -123,7 +133,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         DatabaseReference myRef2 = database.getReference("pos");
         myRef2.addValueEventListener(new ValueEventListener() {
-
+            // Область показа маркеров
+            LatLngBounds.Builder builder = new LatLngBounds.Builder();
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 // This method is called once with the initial value and again
@@ -144,13 +155,27 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 mMap.clear();
                 mMap.addMarker(new MarkerOptions().position(sydney).title("ЭТО Я"));
                 line.add(new LatLng(sydney.latitude, sydney.longitude));
+
+
+                builder.include(sydney);
+                //builder.include(secondMarker.getPosition());
+                LatLngBounds bounds = builder.build();
+
+                LatLng center = bounds.getCenter();
+                builder.include(new LatLng(center.latitude-0.001f,center.longitude-0.001f));
+                builder.include(new LatLng(center.latitude+0.001f,center.longitude+0.001f));
+                bounds = builder.build();
+                //CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, markerPadding);
+
+                mMap.setLatLngBoundsForCameraTarget(bounds);
                mMap.addPolyline(line);
+                mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 15));
                 //mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
-                CameraPosition cameraPosition = new CameraPosition.Builder()
+                /*CameraPosition cameraPosition = new CameraPosition.Builder()
                         .target(new LatLng(sydney.latitude, sydney.longitude))
                         .zoom(15)
                         .build();
-                mMap.moveCamera( CameraUpdateFactory.newCameraPosition(cameraPosition));
+                mMap.moveCamera( CameraUpdateFactory.newCameraPosition(cameraPosition));*/
 
                 /*if (locPos != null) {
                     LatLng sydney = new LatLng(locPos.getLatitude(), locPos.getLongitude());
@@ -186,8 +211,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        /*ArrayList<LatLng> listLine = (ArrayList)line.getPoints();
-        outState.putParcelableArrayList("key", listLine);*/
+        ArrayList<LatLng> listLine = (ArrayList)line.getPoints();
+        outState.putParcelableArrayList("key", listLine);
     }
 
     /**
@@ -258,5 +283,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
         //return locPos;
+    }
+    public void clickBtnSetting(View v){
+        Intent intent = new Intent(this, SettingsActivity.class);
+        startActivity(intent);
+    }
+    public void clickBtnClear(View v){
+        line.getPoints().clear();
+        mMap.clear();
     }
 }
